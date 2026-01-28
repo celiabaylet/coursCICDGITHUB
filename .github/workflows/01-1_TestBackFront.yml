@@ -47,7 +47,7 @@ jobs:
 
       - name: Init bdd
         run: |
-          mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test <./test/insert_test_user_sql
+          mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test <./test/insert_test_user.sql
 
       - name: Run Backend Tests
         run: npm run test:cov
