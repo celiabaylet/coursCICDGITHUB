@@ -45,9 +45,15 @@ jobs:
       - name : Install Backend Dependencies
         run: npm install
 
-      - name: Init bdd
+      # - name: Init bdd
+      #   run: |
+      #     mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test <./test/insert_test_user.sql
+      - name: Init BDD
+        run: npm run initbdd
+
+      - name: Populate BDD
         run: |
-          mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test <./test/insert_test_user.sql
+          mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test < ./test/insert_test_user.sql
 
       - name: Run Backend Tests
         run: npm run test:cov
