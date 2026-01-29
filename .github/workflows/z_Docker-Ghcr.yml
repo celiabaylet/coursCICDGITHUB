@@ -18,12 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-        echo "Docker Registry : ${{ env.REGISTRY}}"
-        echo "Docker Username : ${{ env.USERNAME}}"
-        echo "Docker Image Name : ${{ env.IMAGE_NAME}}"
-        echo "Docker Mode : ${{ inputs.docker-mode }}"
+          echo "Docker Registry : ${{ env.REGISTRY}}"
+          echo "Docker Username : ${{ env.USERNAME}}"
+          echo "Docker Image Name : ${{ env.IMAGE_NAME}}"
+          echo "Docker Mode : ${{ inputs.docker-mode }}"
 
   Build-Push-Docker:
+
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
