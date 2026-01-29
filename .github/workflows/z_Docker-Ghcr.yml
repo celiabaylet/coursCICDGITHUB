@@ -24,6 +24,7 @@ jobs:
           echo "Docker Mode : ${{ inputs.docker-mode }}"
 
   Build-Push-Docker:
+    runs-on: ubuntu-latest
 
 
     steps:
