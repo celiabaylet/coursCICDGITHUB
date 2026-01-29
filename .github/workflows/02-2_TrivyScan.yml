@@ -30,7 +30,7 @@ jobs:
           format: 'table'
           exit-code: '1'
           output: 'back-trivy-results.txt'
-          vuln-type: 'os, library'
+          vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH,MEDIUM,LOW'
           ignore-unfixed: true
       
@@ -41,4 +41,23 @@ jobs:
           name: back-trivy-results
           path: back-trivy-results.txt
           retention-days: 1
-          
+
+      - name: Trivy FRONT Scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        if: always()
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}-front:latest
+          format: 'table'
+          exit-code: '1'
+          output: 'front-trivy-results.txt'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+          ignore-unfixed: true
+
+      - name: Upload FRONT Trivy Scan Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: front-trivy-results
+          path: front-trivy-results.txt
+          retention-days: 1
