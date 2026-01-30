@@ -32,13 +32,9 @@ jobs:
           resourceGroupName: ${{env.ResourceGroupName}}
           scope: resourcegroup
           template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/refs/heads/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
-          parameters: |
-            adminUsername=${{secrets.AZURE_VM_LOGIN}}
-            adminPasswordOrKey=${{secrets.AZURE_VM_PASSWORD}}
-            vmName="jenpeuplus-staging-vm"
-            location=${{env.ResourceGroupLocation}}
-            vmSize="Standard_B2ats_v2"
-        
+
+          parameters: adminUsername=${{secrets.AZURE_VM_LOGIN}} adminPasswordOrKey=${{secrets.AZURE_VM_PASSWORD}} vmName="jenpeuplus-staging-vm" location=${{env.ResourceGroupLocation}} vmSize="Standard_B2ats_v2" vmSize="Standard_B2ats_v2"
+
       - name: Open Port On Security group
         uses: azure/CLI@v2
         with:
