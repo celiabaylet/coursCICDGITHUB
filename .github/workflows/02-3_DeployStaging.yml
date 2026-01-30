@@ -86,7 +86,7 @@ jobs:
         uses: azure/CLI@v2
         with:
           inlineScript: |
-            az network dns record-set a add-record -g JenPeuPlus-IM -z celia.jenpeuplus.com -n cocktail -a ${{env.AZURE_VM_IP}}    
+            az network dns record-set a add-record -g Jenpeuplus-IM -z celia.jenpeuplus.com -n cocktail -a ${{env.AZURE_VM_IP}}    
       
       - name: Checkout
         uses: actions/checkout@v3
