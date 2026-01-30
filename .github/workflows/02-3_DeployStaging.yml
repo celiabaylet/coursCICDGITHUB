@@ -38,6 +38,8 @@ jobs:
             vmName="jenpeuplus-staging-vm"
             location=${{env.ResourceGroupLocation}}
             vmSize="Standard_B2ats_v2"
+            publicIpSku=Standard
+
           
       - name: Open Port On Security group
         uses: azure/CLI@v2
