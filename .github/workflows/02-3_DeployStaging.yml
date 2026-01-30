@@ -26,19 +26,19 @@ jobs:
           inlineScript: |
             az group create --name ${{env.ResourceGroupName}} --location ${{env.ResourceGroupLocation}}
 
-      - name: Azure CLI Deploy ARM
-        uses: azure/arm-deploy@v2
-        with:
-          resourceGroupName: ${{env.ResourceGroupName}}
-          scope: resourcegroup
-          template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/refs/heads/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
-          parameters: |
-            adminUsername=${{secrets.AZURE_VM_LOGIN}}
-            adminPassword=${{secrets.AZURE_VM_PASSWORD}}
-            vmName="jenpeuplus-staging-vm"
-            location=${{env.ResourceGroupLocation}}
-            vmSize="Standard_B2ats_v2"
-            publicIpSku=Standard
+      # - name: Azure CLI Deploy ARM
+      #   uses: azure/arm-deploy@v2
+      #   with:
+      #     resourceGroupName: ${{env.ResourceGroupName}}
+      #     scope: resourcegroup
+      #     template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/refs/heads/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
+      #     parameters: |
+      #       adminUsername=${{secrets.AZURE_VM_LOGIN}}
+      #       adminPasswordOrKey=${{secrets.AZURE_VM_PASSWORD}}
+      #       vmName="jenpeuplus-staging-vm"
+      #       location=${{env.ResourceGroupLocation}}
+      #       vmSize="Standard_B2ats_v2"
+      #       publicIpSku=Standard
 
           
       - name: Open Port On Security group

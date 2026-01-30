@@ -27,18 +27,28 @@ jobs:
           inlineScript: |
             az group create --name ${{env.RessourceGroupName}} --location ${{env.RessourceGroupLocation}}
     
-      - name: 03--- Azure CLI Deploy Azure Ressource Management (ARM)
-        uses: azure/arm-deploy@v2
+      # - name: 03--- Azure CLI Deploy Azure Ressource Management (ARM)
+      #   uses: azure/arm-deploy@v2
+      #   with:
+      #     resourceGroupName: ${{env.RessourceGroupName}}
+      #     scope: resourcegroup
+      #     template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/refs/heads/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
+      #     parameters: adminUsername=${{secrets.AZURE_VM_LOGIN}} adminPasswordOrKey=${{secrets.AZURE_VM_PASSWORD}} vmName="VmProject-DevSecOps-staging-vm" location=${{env.RessourceGroupLocation}} vmSize="Standard_B2ats_v2"
+
+      - name: 03--- Deploy VM via CLI (Sans Template)
+        uses: azure/CLI@v2
         with:
-          ressourceGroupName: ${{env.RessourceGroupName}}
-          scope: resourcegroup
-          template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/refs/heads/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
-          parameters: |
-            adminUsername=${{secrets.AZURE_VM_LOGIN}}
-            adminPassword=${{secrets.AZURE_VM_PASSWORD}}
-            vmName="VmProject-DevSecOps-staging-vm"
-            location=${{env.RessourceGroupLocation}}
-            vmSize="Standard_B2ats_v2"
+          inlineScript: |
+            az vm create \
+              --resource-group ${{ env.RessourceGroupName }} \
+              --name "VmProject-DevSecOps-staging-vm" \
+              --image Ubuntu2204 \
+              --size Standard_B2ats_v2 \
+              --admin-username ${{ secrets.AZURE_VM_LOGIN }} \
+              --admin-password ${{ secrets.AZURE_VM_PASSWORD }} \
+              --public-ip-sku Standard \
+              --assign-identity
+
       
       - name: 04--- Open Port on Security Group
         uses: azure/CLI@v2
