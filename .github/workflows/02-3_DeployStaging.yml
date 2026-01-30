@@ -67,11 +67,11 @@ jobs:
             ls -al
             bash ./install_docker.sh
 
-      # - name: Set DNS Domain 
-      #   uses: azure/CLI@v2
-      #   with:
-      #     inlineScript: |
-      #       az network dns record-set a add-record -g JenPeuPlus-DNS -z staging.jenpeuplus.com -n cocktail -a ${{env.AZURE_VM_IP}}
+      - name: Set DNS Domain 
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az network dns record-set a add-record -g JenPeuPlus-DNS -z staging.jenpeuplus.com -n cocktail -a ${{env.AZURE_VM_IP}}
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -99,7 +99,7 @@ jobs:
           password: ${{secrets.AZURE_VM_PASSWORD}}
 
           script: |
-            echo ${{secrets.MONOREPO_PAT}} | docker login ghcr.io -u Floriansp40 --password-stdin
+            echo ${{secrets.MONOREPO_PAT}} | docker login ghcr.io -u celiabaylet --password-stdin
 
 
             echo MONO_PROJECT_BACK=ghcr.io/${{env.IMAGE_NAME_LOWER}}-back:canary > .env
