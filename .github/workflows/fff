@@ -96,7 +96,7 @@ jobs:
           password: ${{secrets.AZURE_VM_PASSWORD}}
 
           source: "./_tools/docker/docker-compose.yml"
-          target: "."
+          target: "./docker-compose.yml"
       
       - name: 10--- Downcase Image Name
         run: echo "IMAGE_NAME_LOWER=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
