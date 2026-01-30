@@ -1,0 +1,124 @@
+name: 02 - 3 - Staging - Deploy Staging
+
+on:
+  workflow_call:
+
+jobs:
+  AzureStagingServer:
+    
+    runs-on: ubuntu-latest
+
+    environment: STAGING
+    env: 
+      RessourceGroupName: "VmProject-DevSecOps"
+      RessourceGroupLocation : "francecentral"
+
+    steps:
+      - name: 01--- Azure Login
+        uses: azure/login@v2
+        with: 
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION }}
+
+      - name: 02--- Azure CLI Create Ressource group (RG)
+        uses: azure/CLI@v2
+        with: 
+          inlineScript: |
+            az group create --name ${{env.RessourceGroupName}} --location ${{env.RessourceGroupLocation}}
+    
+      # - name: 03--- Azure CLI Deploy Azure Ressource Management (ARM)
+      #   uses: azure/arm-deploy@v2
+      #   with:
+      #     resourceGroupName: ${{env.RessourceGroupName}}
+      #     scope: resourcegroup
+      #     template: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/refs/heads/master/quickstarts/microsoft.compute/vm-simple-linux/azuredeploy.json
+      #     parameters: adminUsername=${{secrets.AZURE_VM_LOGIN}} adminPasswordOrKey=${{secrets.AZURE_VM_PASSWORD}} vmName="VmProject-DevSecOps-staging-vm" location=${{env.RessourceGroupLocation}} vmSize="Standard_B2ats_v2"
+
+      - name: 03--- Deploy VM via CLI (Sans Template)
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az vm create \
+              --resource-group ${{ env.RessourceGroupName }} \
+              --name "VmProject-DevSecOps-staging-vm" \
+              --image Ubuntu2204 \
+              --size Standard_B2ats_v2 \
+              --admin-username ${{ secrets.AZURE_VM_LOGIN }} \
+              --admin-password ${{ secrets.AZURE_VM_PASSWORD }} \
+              --public-ip-sku Standard \
+              --assign-identity
+
+      
+      - name: 04--- Open Port on Security Group
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az network nsg rule create --resource-group ${{env.RessourceGroupName}} --nsg-name SecGroupNet --name PortBack-12000 --priority 100 --direction Inbound --access Allow --protocol Tcp --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges 12000
+            az network nsg rule create --resource-group ${{env.RessourceGroupName}} --nsg-name SecGroupNet --name PortFront-80 --priority 101 --direction Inbound --access Allow --protocol Tcp --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges 80
+ 
+      - name: 05--- Get Public IP et créer règle 
+        if: success()
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az vm show -d -g ${{env.RessourceGroupName}} -n VmProject-DevSecOps-staging-vm --query publicIps -o tsv
+            echo "AZURE_VM_IP=$(az vm show -d -g ${{env.RessourceGroupName}} -n VmProject-DevSecOps-staging-vm --query publicIps -o tsv)" >> $GITHUB_ENV  
+
+      - name: 06--- Install Docker on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{env.AZURE_VM_IP}}
+          port: ${{secrets.AZURE_PORT}} 
+          username: ${{secrets.AZURE_VM_LOGIN}}
+          password: ${{secrets.AZURE_VM_PASSWORD}}
+          script: |
+            curl -o install_docker.sh https://raw.githubusercontent.com/azure-custom-cli/scripts/refs/heads/main/install_docker_ubuntu.sh
+            ls -al
+            bash ./install_docker.sh
+
+      - name: 07--- Set DNS Domain 
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az network dns record-set a add-record -g JenPeuPlus-DNS -z staging.jenpeuplus.com -n cocktail -a ${{env.AZURE_VM_IP}}
+
+      - name: 08--- Checkout
+        uses: actions/checkout@v3
+
+      - name: 09--- Update compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{env.AZURE_VM_IP}}
+          port: ${{secrets.AZURE_PORT}} 
+          username: ${{secrets.AZURE_VM_LOGIN}}
+          password: ${{secrets.AZURE_VM_PASSWORD}}
+
+          source: "./_tools/docker/docker-compose.yml"
+          target: "./docker-compose.yml"
+      
+      - name: 10--- Downcase Image Name
+        run: echo "IMAGE_NAME_LOWER=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+
+      - name: 11--- Start compose file
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{env.AZURE_VM_IP}}
+          port: ${{secrets.AZURE_PORT}} 
+          username: ${{secrets.AZURE_VM_LOGIN}}
+          password: ${{secrets.AZURE_VM_PASSWORD}}
+
+          script: |
+            echo ${{secrets.MONOREPO_PAT}} | docker login ghcr.io -u EstebanRussias --password-stdin
+
+
+            echo MONO_PROJECT_BACK=ghcr.io/${{env.IMAGE_NAME_LOWER}}-back:canary > .env
+            echo MONO_PROJECT_FRONT=ghcr.io/${{env.IMAGE_NAME_LOWER}}-front:canary >> .env
+
+            chmod 600 .env
+
+            docker pull ghcr.io/${{env.IMAGE_NAME_LOWER}}-back:canary
+            docker pull ghcr.io/${{env.IMAGE_NAME_LOWER}}-front:canary
+
+            docker compose up -d
