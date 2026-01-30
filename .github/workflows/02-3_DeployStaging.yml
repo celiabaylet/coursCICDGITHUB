@@ -114,8 +114,7 @@ jobs:
           password: ${{secrets.AZURE_VM_PASSWORD}}
 
           script: |
-            echo ${{secrets.MONOREPO_PAT}} | docker login ghcr.io -u celiabaylet --password-stdin
-
+          
 
             echo MONO_PROJECT_BACK=ghcr.io/${{env.IMAGE_NAME_LOWER}}-back:canary > .env
             echo MONO_PROJECT_FRONT=ghcr.io/${{env.IMAGE_NAME_LOWER}}-front:canary >> .env
