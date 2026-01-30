@@ -9,7 +9,8 @@ jobs:
     environment: STAGING
 
     env:
-      ResourceGroupName: "Jenpeuplus-RG-staging"
+      ResourceGroupName: "Jenpeuplus-IM"
+      # Jenpeuplus-RG-staging
       ResourceGroupLocation: "francecentral"
 
     steps:
