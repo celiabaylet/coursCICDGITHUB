@@ -45,9 +45,18 @@ jobs:
         uses: azure/CLI@v2
         with:
           inlineScript: |
-            az network nsg rule create --resource-group ${{env.ResourceGroupName}} --nsg-name SecGroupNet --name PortBack-12000 --priority 100 --direction Inbound --access Allow --protocol Tcp --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges 12000
-            az network nsg rule create --resource-group ${{env.ResourceGroupName}} --nsg-name SecGroupNet --name PortFront-80 --priority 101 --direction Inbound --access Allow --protocol Tcp --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges 80
-      
+            # az network nsg rule create --resource-group ${{env.ResourceGroupName}} --nsg-name SecGroupNet --name PortBack-12000 --priority 100 --direction Inbound --access Allow --protocol Tcp --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges 12000
+            # az network nsg rule create --resource-group ${{env.ResourceGroupName}} --nsg-name SecGroupNet --name PortFront-80 --priority 101 --direction Inbound --access Allow --protocol Tcp --source-address-prefixes "*" --source-port-ranges "*" --destination-address-prefixes "*" --destination-port-ranges 80
+            az vm create \
+              --resource-group ${{ env.ResourceGroupName }} \
+              --name jenpeuplus-staging-vm \
+              --image Ubuntu2204 \
+              --size Standard_B2ats_v2 \
+              --admin-username ${{ secrets.AZURE_VM_LOGIN }} \
+              --admin-password ${{ secrets.AZURE_VM_PASSWORD }} \
+              --public-ip-sku Standard \
+              --assign-identity
+
       - name: Get Public IP et créer règle 
         if: success()
         uses: azure/CLI@v2
